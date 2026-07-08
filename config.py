@@ -76,8 +76,14 @@ WORLD_SCALING_N_TRAIN_PARAGRAPHS = 10000
 WORLD_SCALING_N_TEST_PARAGRAPHS = 25
 
 
-def set_all_seeds(seed: int = SEED) -> None:
-    """Seed every RNG the project touches, including CUDA."""
+def set_all_seeds(seed: int = SEED, deterministic: bool = False) -> None:
+    """Seed every RNG the project touches, including CUDA.
+
+    deterministic=False (default) matches the original script's behavior:
+    cudnn.benchmark=True for speed, at the cost of bit-exact reproducibility
+    across runs. Pass deterministic=True when you need reproducible results
+    more than throughput (e.g. for the ablation/multi-seed studies).
+    """
     import random
     import numpy as np
 
@@ -86,5 +92,5 @@ def set_all_seeds(seed: int = SEED) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = deterministic
+    torch.backends.cudnn.benchmark = not deterministic
